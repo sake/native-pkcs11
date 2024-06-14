@@ -75,6 +75,10 @@ pub enum SignatureAlgorithm {
         mask_generation_function: DigestType,
         salt_length: u64,
     },
+    RsaPssSha1,
+    RsaPssSha256,
+    RsaPssSha384,
+    RsaPssSha512,
 }
 
 pub trait PrivateKey: Send + Sync {

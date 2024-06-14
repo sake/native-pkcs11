@@ -25,6 +25,10 @@ pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
     CKM_SHA512_RSA_PKCS,
     CKM_ECDSA,
     CKM_RSA_PKCS_PSS,
+    CKM_SHA1_RSA_PKCS_PSS,
+    CKM_SHA256_RSA_PKCS_PSS,
+    CKM_SHA384_RSA_PKCS_PSS,
+    CKM_SHA512_RSA_PKCS_PSS,
 ];
 
 pub enum Mechanism {
@@ -39,6 +43,10 @@ pub enum Mechanism {
         mask_generation_function: native_pkcs11_traits::DigestType,
         salt_length: u64,
     },
+    RsaPssSha1,
+    RsaPssSha256,
+    RsaPssSha384,
+    RsaPssSha512,
 }
 
 #[allow(clippy::missing_safety_doc)]
@@ -105,7 +113,11 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, Erro
                 //  Cast needed on windows
                 salt_length: salt_len as u64,
             })
-        }
+        },
+        CKM_SHA1_RSA_PKCS_PSS => Ok(Mechanism::RsaPssSha1),
+        CKM_SHA256_RSA_PKCS_PSS => Ok(Mechanism::RsaPssSha256),
+        CKM_SHA384_RSA_PKCS_PSS => Ok(Mechanism::RsaPssSha384),
+        CKM_SHA512_RSA_PKCS_PSS => Ok(Mechanism::RsaPssSha512),
         _ => Err(Error::MechanismInvalid(mechanism.mechanism)),
     }
 }
@@ -120,6 +132,10 @@ impl From<Mechanism> for CK_MECHANISM_TYPE {
             Mechanism::RsaPkcsSha384 => CKM_SHA384_RSA_PKCS,
             Mechanism::RsaPkcsSha512 => CKM_SHA512_RSA_PKCS,
             Mechanism::RsaPss { .. } => CKM_RSA_PKCS_PSS,
+            Mechanism::RsaPssSha1 => CKM_SHA1_RSA_PKCS_PSS,
+            Mechanism::RsaPssSha256 => CKM_SHA256_RSA_PKCS_PSS,
+            Mechanism::RsaPssSha384 => CKM_SHA384_RSA_PKCS_PSS,
+            Mechanism::RsaPssSha512 => CKM_SHA512_RSA_PKCS_PSS,
         }
     }
 }
@@ -142,6 +158,10 @@ impl From<Mechanism> for SignatureAlgorithm {
                 mask_generation_function,
                 salt_length,
             },
+            Mechanism::RsaPssSha1 => SignatureAlgorithm::RsaPssSha1,
+            Mechanism::RsaPssSha256 => SignatureAlgorithm::RsaPssSha256,
+            Mechanism::RsaPssSha384 => SignatureAlgorithm::RsaPssSha384,
+            Mechanism::RsaPssSha512 => SignatureAlgorithm::RsaPssSha512,
         }
     }
 }
