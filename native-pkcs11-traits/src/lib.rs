@@ -20,7 +20,7 @@ use std::{
 
 pub use once_cell;
 use once_cell::sync::Lazy;
-use x509_cert::der::Decode;
+use x509_cert::{der::Decode, spki::ObjectIdentifier};
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 pub type Digest = [u8; 20];
@@ -197,7 +197,7 @@ pub enum KeySearchOptions {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyAlgorithm {
     Rsa,
-    Ecc,
+    Ecc(ObjectIdentifier),
 }
 
 pub trait Backend: Send + Sync {

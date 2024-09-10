@@ -393,6 +393,7 @@ dependencies = [
  "native-pkcs11-traits",
  "native-pkcs11-windows",
  "once_cell",
+ "p256",
  "pkcs11-sys",
  "serial_test",
  "thiserror",

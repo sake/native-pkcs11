@@ -135,7 +135,7 @@ impl Backend for KeychainBackend {
     ) -> native_pkcs11_traits::Result<Arc<dyn native_pkcs11_traits::PrivateKey>> {
         let alg = match algorithm {
             native_pkcs11_traits::KeyAlgorithm::Rsa => Algorithm::RSA,
-            native_pkcs11_traits::KeyAlgorithm::Ecc => Algorithm::ECC,
+            native_pkcs11_traits::KeyAlgorithm::Ecc(_) => Algorithm::ECC,
         };
         let label = label.unwrap_or("");
         Ok(generate_key(alg, label, Some(keychain::location()?))

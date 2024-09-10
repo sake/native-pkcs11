@@ -31,6 +31,11 @@ tracing = { version = "0.1.40", default-features = false }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = [
     "env-filter",
 ] }
+p256 = { version = "0.13.2", default-features = false, features = [
+    "arithmetic",
+    "pkcs8",
+    "std",
+] }
 
 [target.'cfg(target_os="macos")'.dependencies]
 native-pkcs11-keychain = { version = "0.2.0", path = "../native-pkcs11-keychain" }

@@ -26,7 +26,7 @@ use p256::pkcs8::{
     der::{asn1::OctetString, Encode},
     AssociatedOid,
 };
-use pkcs1::{der::Decode, RsaPublicKey};
+use pkcs1::{der::Decode, ObjectIdentifier, RsaPublicKey};
 use pkcs11_sys::{
     CKC_X_509,
     CKK_EC,
@@ -102,13 +102,14 @@ impl Object {
                 AttributeType::Class => Some(Attribute::Class(CKO_PRIVATE_KEY)),
                 AttributeType::Decrypt => Some(Attribute::Decrypt(false)),
                 AttributeType::EcParams => {
-                    Some(Attribute::EcParams(p256::NistP256::OID.to_der().ok()?))
+                    //Some(Attribute::EcParams(p256::NistP256::OID.to_der().ok()?))
+                    Some(Attribute::EcParams(ObjectIdentifier::new_unwrap("1.3.36.3.3.2.8.1.1.7").to_der().ok()?))
                 }
                 AttributeType::Extractable => Some(Attribute::Extractable(false)),
                 AttributeType::Id => Some(Attribute::Id(private_key.public_key_hash())),
                 AttributeType::KeyType => Some(Attribute::KeyType(match private_key.algorithm() {
                     native_pkcs11_traits::KeyAlgorithm::Rsa => CKK_RSA,
-                    native_pkcs11_traits::KeyAlgorithm::Ecc => CKK_EC,
+                    native_pkcs11_traits::KeyAlgorithm::Ecc(_) => CKK_EC,
                 })),
                 AttributeType::Label => Some(Attribute::Label(private_key.label())),
                 AttributeType::Modulus => {
@@ -173,18 +174,23 @@ impl Object {
                 }
                 AttributeType::KeyType => Some(Attribute::KeyType(match pk.algorithm() {
                     native_pkcs11_traits::KeyAlgorithm::Rsa => CKK_RSA,
-                    native_pkcs11_traits::KeyAlgorithm::Ecc => CKK_EC,
+                    native_pkcs11_traits::KeyAlgorithm::Ecc(_) => CKK_EC,
                 })),
                 AttributeType::Id => Some(Attribute::Id(pk.public_key_hash())),
                 AttributeType::EcPoint => {
-                    if pk.algorithm() != KeyAlgorithm::Ecc {
-                        return None;
+                    match pk.algorithm() {
+                        KeyAlgorithm::Ecc(_) => {
+                            let wrapped = OctetString::new(pk.to_der()).ok()?;
+                            Some(Attribute::EcPoint(wrapped.to_der().ok()?))
+                        },
+                        _ => None
                     }
-                    let wrapped = OctetString::new(pk.to_der()).ok()?;
-                    Some(Attribute::EcPoint(wrapped.to_der().ok()?))
                 }
                 AttributeType::EcParams => {
-                    Some(Attribute::EcParams(p256::NistP256::OID.to_der().ok()?))
+                    match pk.algorithm() {
+                        KeyAlgorithm::Ecc(oid) => Some(Attribute::EcParams(oid.to_der().ok()?)),
+                        _ => None,
+                    }
                 }
                 _ => {
                     debug!("public_key: type_ unimplemented: {:?}", type_);

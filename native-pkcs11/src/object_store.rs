@@ -200,6 +200,7 @@ mod tests {
     use std::vec;
 
     use native_pkcs11_traits::{backend, random_label, KeyAlgorithm};
+    use p256::pkcs8::AssociatedOid;
     use pkcs11_sys::CKO_PRIVATE_KEY;
     use serial_test::serial;
 
@@ -235,10 +236,10 @@ mod tests {
     #[serial]
     fn key_alg() -> Result<()> {
         test_init();
-        let ec = backend().generate_key(KeyAlgorithm::Ecc, Some(&random_label()))?;
+        let ec = backend().generate_key(KeyAlgorithm::Ecc(p256::NistP256::OID), Some(&random_label()))?;
         let rsa = backend().generate_key(KeyAlgorithm::Rsa, Some(&random_label()))?;
 
-        assert_eq!(ec.algorithm(), KeyAlgorithm::Ecc);
+        assert!(matches!(ec.algorithm(), KeyAlgorithm::Ecc(_)));
         assert_eq!(rsa.algorithm(), KeyAlgorithm::Rsa);
 
         for key in [ec, rsa] {
