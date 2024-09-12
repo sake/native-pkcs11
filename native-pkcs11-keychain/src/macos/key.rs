@@ -28,6 +28,7 @@ use security_framework_sys::item::{
     kSecAttrTokenID,
 };
 use tracing::instrument;
+use p256::pkcs8::AssociatedOid;
 
 use crate::Result;
 
@@ -168,14 +169,14 @@ fn sec_key_algorithm(sec_key: &SecKey) -> Result<KeyAlgorithm> {
         //
         //  SecureEnclave keys do not have kSecAttrKeyType populated, but we can
         //  assume they are Ecc.
-        return Ok(KeyAlgorithm::Ecc);
+        return Ok(KeyAlgorithm::Ecc(p256::NistP256::OID));
     }
     let key_ty = sec_key
         .attributes()
         .find(unsafe { kSecAttrKeyType }.to_void())
         .and_then(|key_type| match *key_type as *const _ {
             ty if ty == unsafe { kSecAttrKeyTypeRSA } => Some(KeyAlgorithm::Rsa),
-            ty if ty == unsafe { kSecAttrKeyTypeEC } => Some(KeyAlgorithm::Ecc),
+            ty if ty == unsafe { kSecAttrKeyTypeEC } => Some(KeyAlgorithm::Ecc(p256::NistP256::OID)),
             _ => None,
         })
         .ok_or("no key type")?;
